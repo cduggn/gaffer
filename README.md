@@ -13,7 +13,7 @@ gaffer is the working successor to [agent-blocks](https://github.com/cduggn/agen
 
 ## Install
 
-You need Go 1.24 or later, git, and the `bd` CLI.
+You need Go 1.24 or later, git, and the `bd` CLI version 1.3.0 or later.
 
 ```bash
 brew install beads            # or see the beads README

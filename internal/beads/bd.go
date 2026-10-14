@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+// MinVersion is the oldest bd with every command gaffer uses (unclaim,
+// heartbeat, ready --exclude-type).
+const MinVersion = "1.3.0"
+
 // BD shells out to the bd CLI against one repository's beads database.
 type BD struct {
 	Bin  string // defaults to "bd"
@@ -33,6 +37,9 @@ func (b BD) run(actor string, args ...string) ([]byte, error) {
 		}
 		if strings.Contains(msg, "already claimed by") {
 			return nil, fmt.Errorf("%w: %s", ErrClaimed, msg)
+		}
+		if strings.Contains(msg, "unknown command") || strings.Contains(msg, "unknown flag") {
+			msg += " (gaffer needs bd " + MinVersion + " or later; check bd version)"
 		}
 		return nil, fmt.Errorf("bd %s: %v: %s", strings.Join(args, " "), err, msg)
 	}
