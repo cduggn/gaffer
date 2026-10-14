@@ -1,0 +1,30 @@
+ts	phase	decision	why	evidence	result
+2026-10-14T07:36:02Z	frame	framed done as: public repo, unit tests and e2e green, live dispatch closes a bead only via the gate	a falsifiable target before writing code	scripts/e2e.sh	met
+2026-10-14T07:36:02Z	research	read agent-blocks in full; listed five gaps (task duplicated in task.json, declared-file fingerprints, no enforced gate, no routing, beads/dispatch unbuilt)	build on what it got right and fix what it left as prose	agent-blocks@fe98223 README.md, skills/task-worker/	gaps drive docs/design.md
+2026-10-14T07:36:02Z	research	probed bd 1.3.1 empirically: claim is atomic, plain init commits and edits CLAUDE.md and core.hooksPath, ready returns epics	integrate against observed behavior, not docs	subagent probe; e2e checks 1-3, 22	init uses --stealth --skip-agents --skip-hooks; ready excludes epics
+2026-10-14T07:36:02Z	design	chose Go single binary over extending agent-blocks' Python	matches gatekeep and bd, one binary to install, typed domain model	go.mod	done
+2026-10-14T07:36:02Z	design	skipped a multi-design bakeoff	the store (beads) was given by the user and the gate shape follows from agent-blocks' contract; low design-space width	n/a	skipped
+2026-10-14T07:36:02Z	design	acceptance criteria live in the bead's acceptance field with [verify:] / [review] tags; untagged criterion is an error	one store; unverifiable criteria rejected at parse time	internal/work/work.go ParseAcceptance	unit tested
+2026-10-14T07:36:02Z	design	gate is a pure function returning every reason; done is the only path to close	testable with literal expectations; one place decides	internal/work/gate.go	12 gate cases
+2026-10-14T07:36:02Z	design	fingerprint = HEAD + digest of git diff + untracked files	agent-blocks only fingerprinted declared sources	internal/gitx/gitx.go Fingerprint	gitx_test covers untracked, tracked, revert
+2026-10-14T07:36:02Z	design	run state in .git/gaffer/runs/<id>/, one dir per run, atomic rename writes	concurrent runs never share a file and no worktree diff includes it	internal/runs/runs.go	done
+2026-10-14T07:36:03Z	design	collapsed phases to working/review/blocked/done/abandoned	verification is an event, not a phase; fewer illegal states	internal/work/work.go transitions	unit tested
+2026-10-14T07:36:03Z	gate	added weakened-registry detection forcing review	an agent could loosen a check to pass it	internal/verify Weakened; e2e 40-45	caught in e2e
+2026-10-14T07:36:03Z	gate	added read-only enforcement for investigate/decompose	read-only playbooks must not change code	gate.go ReadOnly; e2e 46-52	caught in e2e
+2026-10-14T07:36:03Z	fix	handoff filtered gate reasons by string prefix; a stale prior verdict blocked re-handoff	e2e check 37 failed	gate.go SkipReview	replaced with typed flag; e2e green
+2026-10-14T07:36:03Z	verify	mutated Gate to return nil	make sure the harness can fail	local run	unit tests and e2e both failed; restored
+2026-10-14T07:36:03Z	verify	live dispatch: claude worker + claude reviewer on a Clamp task	prove the real agent path, not a scripted one	scratch repo, run 20261014T073029-b0b09e	closed in 41s with verdict and evidence comment
+2026-10-14T07:36:03Z	fix	codex 0.162 has no --full-auto and its sandbox blocks the shared .git; added {repo}/{worktree} placeholders and --add-dir	builtin codex command was wrong	internal/config/config.go builtin	fixed
+2026-10-14T07:36:03Z	verify	live dispatch: claude worker + codex reviewer on a Sign task	cross-model review path	scratch repo, run 20261014T073147-bdbc86	closed in 76s, reviewer:gpt-6 verdict
+2026-10-14T07:36:03Z	gate	refuse review when GAFFER_ACTOR equals the worker	a dispatched worker could rename itself with --actor	app.go Review; e2e check	63 e2e checks green
+2026-10-14T07:49:24Z	review	codex (gpt-6) reviewed the repo cold and filed 15 findings	the builder should not be the only judge	codex exec --sandbox read-only	11 fixed, 3 documented as limits, 1 skipped
+2026-10-14T07:49:24Z	fix	gate now fails on any non-pass check, including tree-unchanged	a blocked verification could pass if the tree was restored (codex #2)	gate.go; work_test 'check edited the tree'	fixed
+2026-10-14T07:49:24Z	fix	verifications and verdicts carry a digest of the acceptance criteria; run playbook pinned at start	editing criteria or relabelling reused old evidence (codex #4)	app.go Evidence; e2e relabel check, mutation-tested	fixed
+2026-10-14T07:49:24Z	fix	done requires committed work on the run's branch	a bead could close while the branch lacked the fix (codex #7)	gate.go; e2e 'done refuses uncommitted work'	fixed
+2026-10-14T07:49:24Z	fix	worktree dir includes a hash of the repo path	two clones with one basename shared worktrees (codex #5)	app.go repoKey	fixed
+2026-10-14T07:49:24Z	fix	dispatcher: per-run lease goroutine, Ctrl-C kills agents and abandons runs, queue re-read after each settle, silent reviewer blocks	codex #8 #9 #10 #13	dispatch.go; e2e checks 62-69	fixed
+2026-10-14T07:49:24Z	fix	done prechecks the lifecycle; LatestVerification reads only .json	codex #11 #12	app.go Done; runs.go	fixed
+2026-10-14T07:49:24Z	limits	documented: worker shell can bypass actor checks; script-content weakening; ignored files and submodules outside the fingerprint	no cheap structural fix; say so instead of overclaiming (codex #1 #3 #6)	docs/design.md Known limits	documented
+2026-10-14T07:49:24Z	limits	skipped same-actor concurrent start lock	dispatcher uses a unique actor per run; only reachable by hand (codex #14)	docs/design.md Known limits	skipped
+2026-10-14T07:49:24Z	verify	added scripted reviewer agents to e2e	built-in reviewer path had no automated coverage (codex #15)	scripts/e2e.sh checks 64-68	covered
+2026-10-14T07:49:24Z	verify	live dispatch after the rewrite: codex worker + claude reviewer on an Abs task	prove the rewritten dispatcher on real agents	scratch repo, run 20261014T074700-2d054b	closed in 2m13s, reviewer:claude-opus-5-5 verdict
